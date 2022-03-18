@@ -1,10 +1,11 @@
 import {
   Step,
   IntegrationStepExecutionContext,
-  createDirectRelationship,
   RelationshipClass,
   IntegrationConfigLoadError,
   IntegrationError,
+  createMappedRelationship,
+  RelationshipDirection,
 } from '@jupiterone/integration-sdk-core';
 
 import { createAzureWebLinker } from '../../../azure';
@@ -21,10 +22,14 @@ import {
   setDataKeys,
   SetDataTypes,
   entities,
-  relationships,
   steps,
+  mappedRelationships,
 } from './constants';
-import { createLocationEntity, createSubscriptionEntity } from './converters';
+import {
+  createLocationEntity,
+  createSubscriptionEntity,
+  getLocationEntityProps,
+} from './converters';
 
 export async function fetchSubscription(
   executionContext: IntegrationStepContext,
@@ -90,16 +95,21 @@ export async function fetchLocations(
       await client.iterateLocations(
         subscriptionEntity.subscriptionId as string,
         async (location) => {
-          const locationEntity = await jobState.addEntity(
-            createLocationEntity(webLinker, location),
-          );
+          // This is currently only used for L126
+          const locationEntity = createLocationEntity(webLinker, location);
+
           await jobState.addRelationship(
-            createDirectRelationship({
+            createMappedRelationship({
               _class: RelationshipClass.USES,
-              from: subscriptionEntity,
-              to: locationEntity,
+              _type: mappedRelationships.SUBSCRIPTION_USES_LOCATION._type,
+              source: subscriptionEntity,
+              target: getLocationEntityProps(webLinker, location),
+              targetFilterKeys: [['_key']],
+              relationshipDirection: RelationshipDirection.FORWARD,
+              skipTargetCreation: false,
             }),
           );
+
           if (location.name) {
             if (locationNameMap[location.name!] !== undefined) {
               // In order to future-proof this function (considering a world where more than
@@ -156,7 +166,8 @@ export const subscriptionSteps: Step<
     id: steps.LOCATIONS,
     name: 'Subscription Locations',
     entities: [entities.LOCATION],
-    relationships: [relationships.SUBSCRIPTION_USES_LOCATION],
+    relationships: [],
+    mappedRelationships: [mappedRelationships.SUBSCRIPTION_USES_LOCATION],
     dependsOn: [STEP_AD_ACCOUNT, steps.SUBSCRIPTION],
     executionHandler: fetchLocations,
   },

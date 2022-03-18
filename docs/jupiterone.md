@@ -437,7 +437,6 @@ The following relationships are created:
 | `azure_subscription`               | **HAS**               | `azure_security_center_setting`                   |
 | `azure_subscription`               | **HAS**               | `azure_security_center_subscription_pricing`      |
 | `azure_subscription`               | **PERFORMED**         | `azure_security_assessment`                       |
-| `azure_subscription`               | **USES**              | `azure_location`                                  |
 | `azure_vm`                         | **GENERATED**         | `azure_shared_image_version`                      |
 | `azure_vm`                         | **USES**              | `azure_image`                                     |
 | `azure_vm`                         | **USES**              | `azure_managed_disk`                              |
@@ -449,6 +448,14 @@ The following relationships are created:
 | `azure_vm`                         | **USES**              | `azure_storage_account`                           |
 | `azure_vnet`                       | **CONTAINS**          | `azure_subnet`                                    |
 | `azure_web_app`                    | **USES**              | `azure_app_service_plan`                          |
+
+### Mapped Relationships
+
+The following mapped relationships are created:
+
+| Source Entity `_type` | Relationship `_class` | Target Entity `_type` | Direction |
+| --------------------- | --------------------- | --------------------- | --------- |
+| `azure_subscription`  | **USES**              | `*azure_location*`    | FORWARD   |
 
 <!--
 ********************************************************************************

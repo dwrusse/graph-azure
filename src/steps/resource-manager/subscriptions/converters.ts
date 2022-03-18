@@ -49,3 +49,18 @@ export function createLocationEntity(
     },
   });
 }
+
+export function getLocationEntityProps(
+  webLinker: AzureWebLinker,
+  data: Location,
+) {
+  return {
+    _key: data.id!,
+    _type: entities.LOCATION._type,
+    _class: entities.LOCATION._class,
+    id: data.id,
+    name: data.name,
+    displayName: data.displayName,
+    webLink: webLinker.portalResourceUrl(data.id),
+  };
+}
